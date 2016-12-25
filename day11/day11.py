@@ -26,44 +26,50 @@ class State:
             return True
         return self.g + self.h != other.g + other.h
     def __gt__(self,other):
-        return self.g  + self.h>= other.g + other.h
+        return self.g  + self.h > other.g + other.h
     def __ge__(self,other):
         return self.g + self.h >= other.g + other.h
 
 def h(my_map):
     dist = 0
-    # for floor in my_map:
-    #     dist += num_loose(floor)
 
-    if len(my_map[2]) == 1:  
-        dist+=1
-    else:
-        dist+=math.ceil((len(my_map[2])/2))*(1)*5 
+    # if len(my_map[2]) == 1:
+    #     dist+=0
+    # else:
+    #     dist+=math.floor((len(my_map[2])/2))*1*(5-1)
 
-    if len(my_map[1]) == 1:  
-        dist+=1
-    else:
-        dist+=math.ceil((len(my_map[1])/2))*(2)*5
+    # if len(my_map[1]) == 1:
+    #     dist+=0
+    # else:
+    #     dist+=math.floor((len(my_map[1])/2))*2*(5-1)
 
-    if len(my_map[0]) == 1:  
-        dist+=1
-    else:   
-        dist+=math.ceil((len(my_map[0])/2))*(3)*5
+    # if len(my_map[0]) == 1:
+    #     dist +=0
+    # else:
+    #     dist+=math.floor((len(my_map[0])/2))*3*(5-1)
+    
+    dist-=len(my_map[3])
+
+    # dist+=len(my_map[2])*1
+    # dist+=len(my_map[1])*2
+    # dist+=len(my_map[0])*3
+
+
+    # dist+=math.floor((len(my_map[2])/2))*(1)
+    # dist+=math.floor((len(my_map[1])/2))*(2)
+    # dist+=math.floor((len(my_map[0])/2))*(3)
+
     return dist
 
-def a():
-    # floors = []
-    # floors.append(["t-g","t-m","p-g","s-g","e-g","e-m","d-g","d-m"])
-    # floors.append(["p-m","s-m"])
-    # floors.append(["pr-m","pr-g","r-g","r-m"])
-    # floors.append([])
 
+
+
+def a():
     floors = []
     floors.append(["t-g","t-m","p-g","s-g"])
     floors.append(["p-m","s-m"])
     floors.append(["pr-m","pr-g","r-g","r-m"])
     floors.append([])
-
 
     # floors = []
     # floors.append(["h-m","l-m"])
@@ -92,7 +98,6 @@ def a():
             #pprint.pprint(curr_state.my_floors)
             path = []
             curr = curr_state
-
             while curr != None:
                 #pprint.pprint (curr.my_floors)
                 path.append(curr)
@@ -101,9 +106,9 @@ def a():
             for p in path:
                 pprint.pprint(p.my_floors)
             break
-        print(curr_state.g)
-        print(curr_state.h)
-        pprint.pprint(curr_state.my_floors)
+        # print(curr_state.g)
+        # print(curr_state.h)
+        # pprint.pprint(curr_state.my_floors)
         moves = get_moves(curr_state)
         for move in moves:
             if not is_dup(visited,move):
@@ -114,20 +119,6 @@ def is_goal(state):
     if state.my_floors[0] == [] and state.my_floors[1] == [] and state.my_floors[2] == []:
         return True
     return False
-
-
-def num_loose(floor):
-    loose_count = 0
-    for item in floor:
-        is_loose = True
-        e_type = element_type(item)
-        i_type = item_type(item)
-        for other in floor:
-            if element_type(other) == e_type and item_type != i_type:
-                is_loose = False
-        if is_loose == True:
-            loose_count+=1
-    return loose_count
 
 
 def is_dup(states,state):
@@ -179,7 +170,7 @@ def is_dup(states,state):
 
             for expanded in states:
                 if temp_map == expanded.my_floors and state.curr_floor == expanded.curr_floor and state.g >= expanded.g:
-                    print("hey its a dup")
+                    #print("hey its a dup")
                     return True
 
                     # print("my state")
@@ -187,6 +178,13 @@ def is_dup(states,state):
                     # print("visited state")
                     # pprint.pprint(expanded.my_floors)
     return dup
+
+def has_pair(floor,item):
+    has = False
+    for i in floor:
+        if element_type(i) == element_type(item) and item_type(i) != item_type(item):
+            has = True
+    return has
 
 def get_moves(state):
     up = -1
@@ -197,11 +195,11 @@ def get_moves(state):
         down = state.curr_floor -1
 
 
-    if len(state.my_floors[0]) == 1:
-        up = -1
-
-    if len(state.my_floors[1]) == 1 and state.curr_floor > 1 and len(state.my_floors[0]) == 0:
-        up = -1
+     #dodgy optimisation
+    # if len(state.my_floors[0]) == 1:
+    #     up = -1
+    # if len(state.my_floors[1]) == 1 and state.curr_floor > 1 and len(state.my_floors[0]) == 0:
+    #     up = -1
 
 
     if down == 0 and len(state.my_floors[0]) == 0:
@@ -223,7 +221,14 @@ def get_moves(state):
             pairs.add(tuple(sorted([item,other])))
 
     if up != -1:
+        matched = False
         for item in pairs:
+            if matched == True and element_type(item[0]) == element_type(item[1]):
+                continue
+
+            if element_type(item[0]) == element_type(item[1]):
+                matched = True
+
             my_map[up].append(item[0])
             my_map[up].append(item[1])
             my_map[state.curr_floor] = [x for x in my_map[state.curr_floor] if x != item[0] and x!= item[1]]
@@ -234,7 +239,13 @@ def get_moves(state):
                 states.append(s)
             my_map = copy.deepcopy(state.my_floors)
 
+        matched = False
         for item in my_map[state.curr_floor]:
+            if matched == True and has_pair(my_map[state.curr_floor],item):
+                continue
+
+            if has_pair(my_map[state.curr_floor],item):
+                matched = True
             my_map[up].append(item)
             my_map[state.curr_floor] = [x for x in my_map[state.curr_floor] if x != item]
 
@@ -248,7 +259,14 @@ def get_moves(state):
 
 
     if down != -1:
+        matched = False
         for item in pairs:
+            if matched == True and element_type(item[0]) == element_type(item[1]):
+                continue
+
+            if element_type(item[0]) == element_type(item[1]):
+                matched = True
+
             my_map[down].append(item[0])
             my_map[down].append(item[1])
             my_map[state.curr_floor] = [x for x in my_map[state.curr_floor] if x != item[0] and x!= item[1]]
@@ -259,7 +277,13 @@ def get_moves(state):
                 states.append(s)
             my_map = copy.deepcopy(state.my_floors)
 
+        matched = False
         for item in my_map[state.curr_floor]:
+            if matched == True and has_pair(my_map[state.curr_floor],item):
+                #print("skipped")
+                continue
+            if has_pair(my_map[state.curr_floor],item):
+                matched = True
             my_map[down].append(item)
             my_map[state.curr_floor] = [x for x in my_map[state.curr_floor] if x != item]
 
